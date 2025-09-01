@@ -12,8 +12,10 @@ import {
   Award
 } from 'lucide-react';
 import hospitalHero from '@/assets/hospital-hero.jpg';
+import Logo from '@/assets/logo.jpeg'
 import { useEffect } from 'react';
 import { initializeDummyData } from '@/lib/storage';
+
 
 const Index = () => {
   useEffect(() => {
@@ -67,8 +69,9 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <HeartHandshake className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-primary">Shifa Hospital</span>
+              <span className="text-xl font-bold text-primary">
+                <img src={Logo} alt="" className='w-20 h-8'/>
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link to="/auth">

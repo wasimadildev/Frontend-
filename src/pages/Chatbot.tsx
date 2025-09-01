@@ -14,7 +14,9 @@ import {
   Users,
   Phone,
   AlertTriangle,
-  Clock
+  Clock,
+  Menu,
+  X
 } from 'lucide-react';
 import { patientStorage, chatStorage, ChatMessage, doctorStorage } from '@/lib/storage';
 
@@ -23,6 +25,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentPatient, setCurrentPatient] = useState(patientStorage.getCurrent());
 
@@ -190,6 +193,7 @@ Please let me know what specific information you're looking for, or feel free to
     chatStorage.addMessage(userMessage);
     setInputMessage('');
     setIsTyping(true);
+    setSidebarOpen(false); // Close sidebar on mobile after sending
 
     // Simulate typing delay
     setTimeout(() => {
@@ -218,22 +222,34 @@ Please let me know what specific information you're looking for, or feel free to
     {
       text: "Book an appointment",
       icon: Calendar,
-      action: () => navigate('/doctors')
+      action: () => {
+        navigate('/doctors');
+        setSidebarOpen(false);
+      }
     },
     {
       text: "Find a doctor",
       icon: Users,
-      action: () => navigate('/doctors')
+      action: () => {
+        navigate('/doctors');
+        setSidebarOpen(false);
+      }
     },
     {
       text: "Emergency help",
       icon: AlertTriangle,
-      action: () => setInputMessage("I need emergency help")
+      action: () => {
+        setInputMessage("I need emergency help");
+        setSidebarOpen(false);
+      }
     },
     {
       text: "Hospital information",
       icon: Phone,
-      action: () => setInputMessage("Tell me about the hospital")
+      action: () => {
+        setInputMessage("Tell me about the hospital");
+        setSidebarOpen(false);
+      }
     }
   ];
 
@@ -244,172 +260,258 @@ Please let me know what specific information you're looking for, or feel free to
     });
   };
 
+  const Sidebar = () => (
+    <div className="space-y-4 sm:space-y-6">
+      <Card className="card-medical">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 sm:space-y-3">
+          {quickActions.map((action, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="w-full justify-start text-xs sm:text-sm p-2 sm:p-3"
+              onClick={action.action}
+            >
+              <action.icon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">{action.text}</span>
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="card-medical">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg flex items-center space-x-2">
+            <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span>Health Tips</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+          <div className="p-2 sm:p-3 bg-accent/50 rounded-lg">
+            <h4 className="font-medium mb-1">💧 Stay Hydrated</h4>
+            <p className="text-muted-foreground">Drink at least 8 glasses of water daily</p>
+          </div>
+          
+          <div className="p-2 sm:p-3 bg-secondary/10 rounded-lg">
+            <h4 className="font-medium mb-1">🚶‍♀️ Regular Exercise</h4>
+            <p className="text-muted-foreground">30 minutes of activity daily</p>
+          </div>
+          
+          <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
+            <h4 className="font-medium mb-1">😴 Quality Sleep</h4>
+            <p className="text-muted-foreground">7-9 hours of sleep each night</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="card-medical">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg flex items-center space-x-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span>Emergency Contacts</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs sm:text-sm">
+          <div className="flex justify-between items-center">
+            <span>Emergency:</span>
+            <span className="font-medium text-destructive">911</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Hospital:</span>
+            <span className="font-medium">+92-21-1234567</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Ambulance:</span>
+            <span className="font-medium">1122</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">AI Medical Assistant</h1>
-          <p className="text-muted-foreground">24/7 healthcare support and guidance</p>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Header */}
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-1 sm:mb-2">
+                AI Medical Assistant
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                24/7 healthcare support and guidance
+              </p>
+            </div>
+            
+            {/* Mobile sidebar toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Chat Interface */}
-          <div className="lg:col-span-3">
-            <Card className="card-medical h-[600px] flex flex-col">
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center space-x-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  <span>Medical Assistant</span>
-                  <Badge className="bg-success/10 text-success">Online</Badge>
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col p-0">
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          message.type === 'user'
-                            ? 'bg-primary text-primary-foreground ml-4'
-                            : 'bg-accent text-accent-foreground mr-4'
-                        }`}
-                      >
-                        <div className="flex items-start space-x-2">
-                          <div className="flex-shrink-0">
-                            {message.type === 'user' ? (
-                              <User className="h-4 w-4 mt-1" />
-                            ) : (
-                              <Bot className="h-4 w-4 mt-1 text-primary" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                              {message.message}
-                            </div>
-                            <div className="text-xs opacity-70 mt-1">
-                              {formatTime(message.timestamp)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <div className="bg-accent text-accent-foreground rounded-lg p-3 mr-4">
-                        <div className="flex items-center space-x-2">
-                          <Bot className="h-4 w-4 text-primary" />
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div ref={messagesEndRef} />
-                </div>
-                
-                {/* Input */}
-                <div className="border-t p-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type your message here..."
-                      className="flex-1"
-                    />
-                    <Button onClick={handleSendMessage} disabled={!inputMessage.trim()}>
-                      <Send className="h-4 w-4" />
+        <div className="relative">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setSidebarOpen(false)}>
+              <div 
+                className="absolute right-0 top-0 h-full w-80 max-w-[80vw] bg-background border-l shadow-lg overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold">Menu</h2>
+                    <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
+                  <Sidebar />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          )}
+
+          <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* Chat Interface */}
+            <div className="lg:col-span-3">
+              <Card className="card-medical flex flex-col h-[calc(100vh-200px)] sm:h-[calc(100vh-180px)] lg:h-[600px]">
+                <CardHeader className="border-b p-3 sm:p-4 lg:p-6">
+                  <CardTitle className="flex items-center space-x-2 text-sm sm:text-base">
+                    <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    <span>Medical Assistant</span>
+                    <Badge className="bg-success/10 text-success text-xs">Online</Badge>
+                  </CardTitle>
+                </CardHeader>
+                
+                <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
+                            message.type === 'user'
+                              ? 'bg-primary text-primary-foreground ml-2 sm:ml-4'
+                              : 'bg-accent text-accent-foreground mr-2 sm:mr-4'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-2">
+                            <div className="flex-shrink-0">
+                              {message.type === 'user' ? (
+                                <User className="h-3 w-3 sm:h-4 sm:w-4 mt-1" />
+                              ) : (
+                                <Bot className="h-3 w-3 sm:h-4 sm:w-4 mt-1 text-primary" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed break-words">
+                                {message.message}
+                              </div>
+                              <div className="text-xs opacity-70 mt-1">
+                                {formatTime(message.timestamp)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-accent text-accent-foreground rounded-lg p-2 sm:p-3 mr-2 sm:mr-4">
+                          <div className="flex items-center space-x-2">
+                            <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+                            <div className="flex space-x-1">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce"></div>
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
+                  </div>
+                  
+                  {/* Input */}
+                  <div className="border-t p-3 sm:p-4">
+                    <div className="flex space-x-2">
+                      <Input
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your message..."
+                        className="flex-1 text-sm sm:text-base"
+                      />
+                      <Button 
+                        onClick={handleSendMessage} 
+                        disabled={!inputMessage.trim()}
+                        size="sm"
+                        className="px-3 sm:px-4"
+                      >
+                        <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block">
+              <Sidebar />
+            </div>
           </div>
+        </div>
 
-          {/* Quick Actions */}
-          <div className="space-y-6">
-            <Card className="card-medical">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {quickActions.map((action, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={action.action}
-                  >
-                    <action.icon className="h-4 w-4 mr-2" />
-                    {action.text}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card className="card-medical">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <Heart className="h-5 w-5 text-primary" />
-                  <span>Health Tips</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="p-3 bg-accent/50 rounded-lg">
-                  <h4 className="font-medium mb-1">💧 Stay Hydrated</h4>
-                  <p className="text-muted-foreground">Drink at least 8 glasses of water daily</p>
-                </div>
-                
-                <div className="p-3 bg-secondary/10 rounded-lg">
-                  <h4 className="font-medium mb-1">🚶‍♀️ Regular Exercise</h4>
-                  <p className="text-muted-foreground">30 minutes of activity daily</p>
-                </div>
-                
-                <div className="p-3 bg-warning/10 rounded-lg">
-                  <h4 className="font-medium mb-1">😴 Quality Sleep</h4>
-                  <p className="text-muted-foreground">7-9 hours of sleep each night</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="card-medical">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <span>Emergency Contacts</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Emergency:</span>
-                  <span className="font-medium text-destructive">911</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Hospital:</span>
-                  <span className="font-medium">+92-21-1234567</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Ambulance:</span>
-                  <span className="font-medium">1122</span>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Mobile Quick Actions Bar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-3 sm:p-4">
+          <div className="flex space-x-2 overflow-x-auto pb-1">
+            {quickActions.slice(0, 3).map((action, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                className="flex-shrink-0 text-xs"
+                onClick={action.action}
+              >
+                <action.icon className="h-3 w-3 mr-1" />
+                <span className="hidden xs:inline">{action.text}</span>
+                <span className="xs:hidden">
+                  {action.text.split(' ')[0]}
+                </span>
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-shrink-0 text-xs"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-3 w-3 mr-1" />
+              <span className="hidden xs:inline">More</span>
+              <span className="xs:hidden">•••</span>
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Add bottom padding to prevent content from being hidden behind mobile quick actions */}
+      <div className="lg:hidden h-16 sm:h-20"></div>
     </div>
   );
 };
