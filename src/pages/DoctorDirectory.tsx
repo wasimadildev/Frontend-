@@ -22,7 +22,7 @@ const DoctorDirectory = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSpecialization, setSelectedSpecialization] = useState('');
+  const [selectedSpecialization, setSelectedSpecialization] = useState('all');
 
   useEffect(() => {
     const currentPatient = patientStorage.getCurrent();
@@ -37,7 +37,8 @@ const DoctorDirectory = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const filtered = doctorStorage.search(searchQuery, selectedSpecialization);
+    const specializationFilter = selectedSpecialization === 'all' ? '' : selectedSpecialization;
+    const filtered = doctorStorage.search(searchQuery, specializationFilter);
     setFilteredDoctors(filtered);
   }, [searchQuery, selectedSpecialization]);
 
@@ -90,7 +91,7 @@ const DoctorDirectory = () => {
               <SelectValue placeholder="All Specializations" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Specializations</SelectItem>
+              <SelectItem value="all">All Specializations</SelectItem>
               {specializations.map((spec) => (
                 <SelectItem key={spec} value={spec}>{spec}</SelectItem>
               ))}
@@ -189,7 +190,7 @@ const DoctorDirectory = () => {
               className="mt-4"
               onClick={() => {
                 setSearchQuery('');
-                setSelectedSpecialization('');
+                setSelectedSpecialization('all');
               }}
             >
               Clear Filters
