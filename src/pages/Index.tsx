@@ -108,7 +108,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/chat">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button size="lg" variant="outline" className="border-white text-black hover:bg-white/10 ">
                   Chat with AI Assistant
                 </Button>
               </Link>
